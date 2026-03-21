@@ -8,18 +8,18 @@ logger = logging.getLogger("tradeclaw.rule_engine")
 
 # -- Configurable Settings --
 LIQUIDITY_MIN = 3_000_000
-SPREAD_MAX = 0.0015
+SPREAD_MAX = 0.005           # 0.5% (was 0.15%)
 MARKET_CAP_MIN = 50_000_000
 MARKET_CAP_MAX = 5_000_000_000
 
-MOMENTUM_5M_MIN = 0.005      # 0.5%
-MOMENTUM_15M_MIN = 0.010     # 1.0%
-REL_VOLUME_MIN = 1.5
-RSI_MIN = 45
-RSI_MAX = 72
-REL_STRENGTH_MIN = 0.0
-BODY_WICK_MIN = 0.4
-TREND_PERSIST_MIN = 0.66     # 2/3 candles
+MOMENTUM_5M_MIN = 0.001      # 0.1% (was 0.5%)
+MOMENTUM_15M_MIN = 0.002     # 0.2% (was 1.0%)
+REL_VOLUME_MIN = 1.1         # (was 1.5)
+RSI_MIN = 40                 # (was 45)
+RSI_MAX = 80                 # (was 72)
+REL_STRENGTH_MIN = -0.005    # allow slight negative RS
+BODY_WICK_MIN = 0.2          # (was 0.4)
+TREND_PERSIST_MIN = 0.33     # 1/3 candles (was 2/3)
 
 P_WIN_ASSUMED = 0.50
 FEE_MAKER_PCT = 0.001        # Binance Spot Maker
@@ -51,9 +51,9 @@ def apply_prefilters(f: dict) -> tuple[bool, str]:
         return False, "FAIL_SPREAD"
     if f.get("already_pumped", False):
         return False, "FAIL_ALREADY_PUMPED"
-    if f["momentum_5m"] <= 0:
+    if f["momentum_5m"] <= -0.005:  # allow flat/slight dip (was <= 0)
         return False, "FAIL_NO_MOMENTUM_5M"
-    if f["momentum_15m"] <= 0:
+    if f["momentum_15m"] <= -0.005: # allow flat/slight dip (was <= 0)
         return False, "FAIL_NO_MOMENTUM_15M"
     return True, "PASS"
 

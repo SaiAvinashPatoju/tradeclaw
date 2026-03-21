@@ -13,6 +13,7 @@
     "@react-navigation/bottom-tabs": "^7.1.0",
     "@react-navigation/native": "^7.1.0",
     "expo": "54.0.33",
+    "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.0",
     "expo-device": "~8.0.10",
     "expo-haptics": "~15.0.8",

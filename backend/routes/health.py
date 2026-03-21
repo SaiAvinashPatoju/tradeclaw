@@ -33,7 +33,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     ).timestamp())
 
     stmt = select(func.count()).select_from(Signal).where(
-        Signal.created_at >= today_start
+        Signal.generated_at >= today_start
     )
     result = await db.execute(stmt)
     signals_today = result.scalar() or 0

@@ -6,6 +6,9 @@ git push
 # For Expo (from the mobile directory)
 eas update --branch main --message "Your update message"
 
+# mobile apk
+eas build --profile preview --platform android
+
 ===========================================================================================
 tradeclaw_beta
 ---
