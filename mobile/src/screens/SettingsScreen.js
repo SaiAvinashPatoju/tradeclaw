@@ -12,7 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, fonts, spacing, borderRadius } from '../theme';
 import { getBackendUrl, setBackendUrl, getSettings, saveSettings } from '../services/storage';
 
-const CONFIDENCE_OPTIONS = ['MODERATE', 'HIGH', 'SNIPER'];
+const CONFIDENCE_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'SNIPER'];
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -20,7 +20,7 @@ export default function SettingsScreen() {
   const [settings, setSettings] = useState({
     notificationSound: true,
     vibration: true,
-    minConfidence: 'MODERATE',
+    minConfidence: 'LOW',
     autoRemoveExpired: true,
   });
   const [saved, setSaved] = useState(false);

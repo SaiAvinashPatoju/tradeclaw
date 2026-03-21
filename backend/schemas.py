@@ -8,7 +8,7 @@ class SignalResponse(BaseModel):
     entry_high: float
     target_pct: float
     stop_loss_pct: float
-    score: int
+    score: float
     confidence: str
     reason: str
     btc_regime: str

@@ -36,9 +36,8 @@ export default function DashboardScreen() {
       const currentSettings = settings || await getSettings();
       let filtered = result.data;
 
-      // Filter Confidence
       if (currentSettings?.minConfidence) {
-        const tiers = { SNIPER: 3, HIGH: 2, MODERATE: 1 };
+        const tiers = { SNIPER: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
         const minTier = tiers[currentSettings.minConfidence] || 0;
         filtered = filtered.filter(s => (tiers[s.confidence] || 0) >= minTier);
       }

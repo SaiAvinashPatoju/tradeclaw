@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
-from ..models import Signal, MarketSnapshot, Trade
+from ..models import Signal, MarketSnapshot, TradeOutcome
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -45,9 +45,9 @@ async def export_signals(
 
     stmt = (
         select(Signal)
-        .where(Signal.created_at >= from_ts)
-        .where(Signal.created_at <= to_ts)
-        .order_by(Signal.created_at.desc())
+        .where(Signal.generated_at >= from_ts)
+        .where(Signal.generated_at <= to_ts)
+        .order_by(Signal.generated_at.desc())
     )
     result = await db.execute(stmt)
     signals = result.scalars().all()
@@ -77,12 +77,12 @@ async def export_market(
 
     stmt = (
         select(MarketSnapshot)
-        .where(MarketSnapshot.timestamp >= from_ts)
-        .where(MarketSnapshot.timestamp <= to_ts)
+        .where(MarketSnapshot.captured_at >= from_ts)
+        .where(MarketSnapshot.captured_at <= to_ts)
     )
     if symbol:
         stmt = stmt.where(MarketSnapshot.symbol == symbol.upper())
-    stmt = stmt.order_by(MarketSnapshot.timestamp.desc())
+    stmt = stmt.order_by(MarketSnapshot.captured_at.desc())
 
     result = await db.execute(stmt)
     snapshots = result.scalars().all()
@@ -110,10 +110,10 @@ async def export_trades(
         to_ts = int(time.time())
 
     stmt = (
-        select(Trade)
-        .where(Trade.entry_time >= from_ts)
-        .where(Trade.entry_time <= to_ts)
-        .order_by(Trade.entry_time.desc())
+        select(TradeOutcome)
+        .where(TradeOutcome.entry_time >= from_ts)
+        .where(TradeOutcome.entry_time <= to_ts)
+        .order_by(TradeOutcome.entry_time.desc())
     )
     result = await db.execute(stmt)
     trades = result.scalars().all()

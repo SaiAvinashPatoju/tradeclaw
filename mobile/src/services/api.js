@@ -4,7 +4,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DEFAULT_BACKEND_URL = 'http://192.168.1.100:8000';
+const DEFAULT_BACKEND_URL = 'http://192.168.1.7:8000';
 const STORAGE_KEY = 'tradeclaw_backend_url';
 
 async function getBackendUrl() {
@@ -50,6 +50,18 @@ export async function fetchHealth() {
     return { data, error: false };
   } catch (error) {
     return { data: null, error: true, message: error.message };
+  }
+}
+
+export async function fetchArchive(limit = 50) {
+  try {
+    const baseUrl = await getBackendUrl();
+    const response = await fetchWithTimeout(`${baseUrl}/signals/archive?limit=${limit}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return { data: data.signals || [], error: false };
+  } catch (error) {
+    return { data: [], error: true, message: error.message };
   }
 }
 

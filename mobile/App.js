@@ -12,6 +12,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import DashboardScreen from './src/screens/DashboardScreen';
 import StatsScreen from './src/screens/StatsScreen';
+import ArchiveScreen from './src/screens/ArchiveScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { registerForPushNotifications } from './src/services/notifications';
 import { colors, fonts, borderRadius } from './src/theme';
@@ -36,6 +37,7 @@ const TabIcon = ({ name, color, size, focused }) => {
   const icons = {
     Dashboard: '₪', // Signal-like icon
     Stats: '⑊',     // Bar-chart-like icon
+    Archive: '📁',  // Archive
     Settings: '⚙',   // Gear
   };
 
@@ -106,6 +108,7 @@ export default function App() {
         >
           <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'SIGNALS' }} />
           <Tab.Screen name="Stats" component={StatsScreen} options={{ tabBarLabel: 'STATS' }} />
+          <Tab.Screen name="Archive" component={ArchiveScreen} options={{ tabBarLabel: 'ARCHIVE' }} />
           <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'SETTINGS' }} />
         </Tab.Navigator>
       </NavigationContainer>

@@ -16,7 +16,7 @@ import { scheduleExitReminder } from '../services/notifications';
 
 export default function SignalTile({ signal, onExpire, index = 0 }) {
   const [reminderSet, setReminderSet] = useState(false);
-  const tier = confidenceColors[signal.confidence] || confidenceColors.MODERATE;
+  const tier = confidenceColors[signal.confidence] || confidenceColors.MEDIUM;
   
   // Entry animation
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -41,7 +41,6 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
   }, []);
 
   const handleExitAlert = () => {
-    // Custom haptic per tier when opening options
     if (signal.confidence === 'SNIPER') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } else {
@@ -55,7 +54,7 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
         { text: '5 min', onPress: () => setReminder(5) },
         { text: '10 min', onPress: () => setReminder(10) },
         { text: '15 min', onPress: () => setReminder(15) },
-        { text: '20 min', onPress: () => setReminder(20) }, // Added 4th option to be closer to "custom"
+        { text: '20 min', onPress: () => setReminder(20) }, 
         { text: 'Cancel', style: 'cancel' },
       ]
     );
@@ -72,11 +71,15 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
-  // Select the appropriate shadow based on confidence
   const glowStyle = 
     signal.confidence === 'SNIPER' ? shadows.glowSniper :
     signal.confidence === 'HIGH' ? shadows.glowHigh : 
     shadows.glowModerate;
+
+  const getDotMeter = (score) => {
+    const filled = Math.min(5, Math.max(0, Math.round((score / 100) * 5)));
+    return '●'.repeat(filled) + '○'.repeat(5 - filled);
+  };
 
   return (
     <Animated.View style={[
@@ -93,26 +96,32 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
           { borderColor: tier.border }
         ]}
       >
-        {/* Glow Top Accent */}
         <View style={[styles.glowBar, { backgroundColor: tier.text }]} />
 
         {/* Header Row */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={[styles.badge, { backgroundColor: tier.bg, borderColor: tier.border }]}>
-              <Text style={[styles.badgeText, { color: tier.text }]}>
-                {tier.emoji} {signal.confidence}
-              </Text>
-            </View>
             <Text style={styles.symbol}>{formatSymbol(signal.symbol)}</Text>
           </View>
           <View style={styles.timerWrap}>
-            <Text style={styles.timerLabel}>EXPIRES IN</Text>
             <CountdownTimer expiryAt={signal.expiry_at} onExpire={() => onExpire && onExpire(signal.id)} />
           </View>
         </View>
 
-        {/* Target/Stop Data Grid - High contrast vs the rest */}
+        {/* Score Row */}
+        <View style={styles.scoreRow}>
+          <Text style={styles.scoreText}>
+            Score: <Text style={{fontWeight: 'bold', color: tier.text}}>{signal.score.toFixed(1)}</Text>
+          </Text>
+          <Text style={[styles.dotMeter, {color: tier.text}]}>
+            {'   '}{getDotMeter(signal.score)}{'   '}
+          </Text>
+          <Text style={[styles.scoreText, {fontWeight: 'bold', color: tier.text}]}>
+            {signal.confidence}
+          </Text>
+        </View>
+
+        {/* Target/Stop Data Grid */}
         <View style={styles.targetGrid}>
            <View style={styles.targetCol}>
              <Text style={styles.targetColLabel}>ENTRY ZONE</Text>
@@ -121,39 +130,23 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
            <View style={styles.targetColRight}>
              <View style={styles.pctRow}>
                <Text style={[styles.pctLabel, {color: colors.success}]}>TP</Text>
-               <Text style={[styles.pctValue, {color: colors.success}]}>+{signal.target_pct}%</Text>
+               <Text style={[styles.pctValue, {color: colors.success}]}>+{signal.target_pct.toFixed(2)}%</Text>
              </View>
              <View style={styles.pctRow}>
                <Text style={[styles.pctLabel, {color: colors.danger}]}>SL</Text>
-               <Text style={[styles.pctValue, {color: colors.danger}]}>-{signal.stop_loss_pct}%</Text>
+               <Text style={[styles.pctValue, {color: colors.danger}]}>-{signal.stop_loss_pct.toFixed(2)}%</Text>
              </View>
            </View>
         </View>
 
-        {/* Metrics Row (Small text) */}
-        <View style={styles.metricsRow}>
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>SCORE</Text>
-            <Text style={[styles.metricValue, {color: tier.text}]}>{signal.score}</Text>
-          </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>RSI</Text>
-            <Text style={styles.metricValue}>{signal.rsi?.toFixed(0) || '—'}</Text>
-          </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>VOL</Text>
-            <Text style={styles.metricValue}>{signal.volume_spike?.toFixed(1) || '—'}x</Text>
-          </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>BTC</Text>
-            <Text style={[styles.metricValue, 
-               signal.btc_regime === 'UP' ? {color: colors.success} : 
-               signal.btc_regime === 'DOWN' ? {color: colors.danger} : null
-            ]}>{signal.btc_regime || '—'}</Text>
-          </View>
+        {/* Information Meta */}
+        <View style={styles.metaBox}>
+          <Text style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Period:</Text> <Text style={styles.metaVal}>5m–15m</Text>
+          </Text>
+          <Text style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Reason:</Text> <Text style={styles.metaVal}>{signal.reason}</Text>
+          </Text>
         </View>
 
         {/* Action Buttons */}
@@ -172,7 +165,7 @@ export default function SignalTile({ signal, onExpire, index = 0 }) {
             onPress={handleBinance}
             activeOpacity={0.8}
           >
-            <Text style={[styles.btnText, styles.btnTextBinance]}>TRADE</Text>
+            <Text style={[styles.btnText, styles.btnTextBinance]}>OPEN BINANCE</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -206,23 +199,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.sm,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  badge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-  },
-  badgeText: {
-    fontSize: fonts.sizes.xs,
-    fontWeight: fonts.weights.heavy,
-    letterSpacing: 0.8,
   },
   symbol: {
     fontSize: fonts.sizes.xl,
@@ -233,19 +215,25 @@ const styles = StyleSheet.create({
   timerWrap: {
     alignItems: 'flex-end',
   },
-  timerLabel: {
-    fontSize: 9,
-    color: colors.textMuted,
-    fontWeight: fonts.weights.bold,
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  scoreText: {
+    fontSize: fonts.sizes.sm,
+    color: colors.textSecondary,
+  },
+  dotMeter: {
+    fontSize: fonts.sizes.sm,
     letterSpacing: 1,
-    marginBottom: 2,
   },
   targetGrid: {
     flexDirection: 'row',
     backgroundColor: 'rgba(0,0,0,0.2)',
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.03)',
   },
@@ -288,35 +276,23 @@ const styles = StyleSheet.create({
   pctValue: {
     fontSize: fonts.sizes.md,
     fontWeight: fonts.weights.heavy,
-    width: 50,
     textAlign: 'right',
   },
-  metricsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  metaBox: {
     marginBottom: spacing.xl,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 4,
   },
-  metric: {
-    alignItems: 'center',
-  },
-  metricLabel: {
-    fontSize: 9,
-    color: colors.textMuted,
-    fontWeight: fonts.weights.bold,
-    letterSpacing: 1,
+  metaRow: {
     marginBottom: 4,
   },
-  metricValue: {
+  metaLabel: {
     fontSize: fonts.sizes.sm,
+    color: colors.textMuted,
     fontWeight: fonts.weights.bold,
-    color: colors.textSecondary,
   },
-  metricDivider: {
-    width: 1,
-    height: 12,
-    backgroundColor: colors.border,
+  metaVal: {
+    fontSize: fonts.sizes.sm,
+    color: colors.textSecondary,
   },
   actions: {
     flexDirection: 'row',
@@ -350,10 +326,10 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   btnBinance: {
-    backgroundColor: '#FCD535', // Binance yellow
+    backgroundColor: '#FCD535',
     borderColor: '#FCD535',
   },
   btnTextBinance: {
-    color: '#000000', // Black text for high contrast on yellow
+    color: '#000000', 
   },
 });

@@ -1,3 +1,11 @@
+# For GitHub
+git add .
+git commit -m "Your commit message"
+git push
+
+# For Expo (from the mobile directory)
+eas update --branch main --message "Your update message"
+
 ===========================================================================================
 tradeclaw_beta
 ---

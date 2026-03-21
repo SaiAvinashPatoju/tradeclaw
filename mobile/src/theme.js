@@ -33,6 +33,10 @@ export const colors = {
   moderateBg: 'rgba(59, 130, 246, 0.15)',
   moderateBorder: 'rgba(59, 130, 246, 0.4)',
   
+  low: '#8B5CF6',         // Primary Purple
+  lowBg: 'rgba(139, 92, 246, 0.15)',
+  lowBorder: 'rgba(139, 92, 246, 0.4)',
+  
   // Status
   success: '#10B981',
   danger: '#EF4444',
@@ -48,7 +52,8 @@ export const colors = {
 export const confidenceColors = {
   SNIPER: { text: colors.sniper, bg: colors.sniperBg, border: colors.sniperBorder, emoji: '🎯' },
   HIGH:   { text: colors.high, bg: colors.highBg, border: colors.highBorder, emoji: '🔥' },
-  MODERATE: { text: colors.moderate, bg: colors.moderateBg, border: colors.moderateBorder, emoji: '⚡' },
+  MEDIUM: { text: colors.moderate, bg: colors.moderateBg, border: colors.moderateBorder, emoji: '⚡' },
+  LOW:    { text: colors.low, bg: colors.lowBg, border: colors.lowBorder, emoji: '👀' },
 };
 
 export const fonts = {

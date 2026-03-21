@@ -26,7 +26,7 @@ export function formatEntryRange(low, high) {
 }
 
 export function confidenceEmoji(tier) {
-  const emojis = { SNIPER: '🎯', HIGH: '🔥', MODERATE: '⚡' };
+  const emojis = { SNIPER: '🎯', HIGH: '🔥', MEDIUM: '⚡', LOW: '👀' };
   return emojis[tier] || '📊';
 }
 

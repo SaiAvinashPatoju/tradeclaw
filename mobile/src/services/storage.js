@@ -12,7 +12,7 @@ const KEYS = {
 const DEFAULT_SETTINGS = {
   notificationSound: true,
   vibration: true,
-  minConfidence: 'MODERATE',
+  minConfidence: 'LOW',
   autoRemoveExpired: true,
 };
 
