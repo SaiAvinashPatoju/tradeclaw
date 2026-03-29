@@ -19,9 +19,9 @@ const DEFAULT_SETTINGS = {
 export async function getBackendUrl() {
   try {
     const url = await AsyncStorage.getItem(KEYS.BACKEND_URL);
-    return url || 'http://192.168.1.100:8000';
+    return url || 'http://192.168.1.10:8001';
   } catch {
-    return 'http://192.168.1.100:8000';
+    return 'http://192.168.1.10:8001';
   }
 }
 
