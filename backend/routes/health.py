@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..models import Signal, MarketSnapshot
 from ..schemas import HealthResponse
+from ..runtime_config import get_runtime_config
 
 router = APIRouter(tags=["health"])
 
@@ -38,8 +39,12 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     signals_today = result.scalar() or 0
 
+    runtime_cfg = get_runtime_config()
+
     return HealthResponse(
         status="ok",
         last_scan=_last_scan_time,
         signals_today=signals_today,
+        data_source_mode=runtime_cfg["data_source_mode"],
+        algorithm_profile=runtime_cfg["algorithm_profile"],
     )

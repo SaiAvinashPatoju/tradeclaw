@@ -42,17 +42,36 @@ async function fetchWithBaseCandidates(path, timeout = 5000) {
   throw lastError || new Error('All backend endpoints failed');
 }
 
-async function fetchWithTimeout(url, timeout = 5000) {
+async function fetchWithTimeout(url, timeout = 5000, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(timer);
     return response;
   } catch (error) {
     clearTimeout(timer);
     throw error;
   }
+}
+
+async function requestWithBaseCandidates(path, options = {}, timeout = 5000) {
+  const candidates = await getBackendCandidates();
+  let lastError = null;
+
+  for (const baseUrl of candidates) {
+    try {
+      const response = await fetchWithTimeout(`${baseUrl}${path}`, timeout, options);
+      if (response.ok && baseUrl !== candidates[0]) {
+        await AsyncStorage.setItem(STORAGE_KEY, baseUrl);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('All backend endpoints failed');
 }
 
 export async function fetchSignals() {
@@ -98,6 +117,36 @@ export async function postSignal(signalData) {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return { data: await response.json(), error: false };
+  } catch (error) {
+    return { data: null, error: true, message: error.message };
+  }
+}
+
+export async function fetchEngineConfig() {
+  try {
+    const response = await fetchWithBaseCandidates('/control/engine');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return { data, error: false };
+  } catch (error) {
+    return { data: null, error: true, message: error.message };
+  }
+}
+
+export async function updateEngineConfig(payload) {
+  try {
+    const response = await requestWithBaseCandidates(
+      '/control/engine',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+      7000
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return { data, error: false };
   } catch (error) {
     return { data: null, error: true, message: error.message };
   }

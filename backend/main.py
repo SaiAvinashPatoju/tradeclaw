@@ -14,6 +14,7 @@ from .scheduler import start_scheduler, stop_scheduler
 from .routes.signals import router as signals_router
 from .routes.health import router as health_router
 from .routes.export import router as export_router
+from .routes.control import router as control_router
 
 # ── Logging Setup ────────────────────────────────────────────────────
 logging.basicConfig(
@@ -67,6 +68,7 @@ app.add_middleware(
 app.include_router(signals_router)
 app.include_router(health_router)
 app.include_router(export_router)
+app.include_router(control_router)
 
 
 @app.get("/", tags=["root"])

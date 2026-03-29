@@ -60,6 +60,8 @@ services:
     ports:
       - "7077:7077"
       - "8080:8080"
+      - "35000:35000"
+      - "35001:35001"
     networks:
       - tradeclaw-streaming
 

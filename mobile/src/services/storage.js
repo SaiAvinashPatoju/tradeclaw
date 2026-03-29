@@ -14,6 +14,8 @@ const DEFAULT_SETTINGS = {
   vibration: true,
   minConfidence: 'LOW',
   autoRemoveExpired: true,
+  dataSourceMode: 'simulator',
+  algorithmProfile: 'mid',
 };
 
 export async function getBackendUrl() {

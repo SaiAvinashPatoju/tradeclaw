@@ -28,3 +28,5 @@ class HealthResponse(BaseModel):
     status: str
     last_scan: Optional[int] = None
     signals_today: int = 0
+    data_source_mode: str = "simulator"
+    algorithm_profile: str = "mid"

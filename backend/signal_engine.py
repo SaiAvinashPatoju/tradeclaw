@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 
 from .rule_engine import apply_prefilters, apply_core_rules, score_candidates
-from .rule_engine import TARGET_PCT, STOP_LOSS_PCT
+from . import rule_engine
 
 logger = logging.getLogger("tradeclaw.signal_engine")
 
@@ -120,8 +120,8 @@ def generate_signals(market_data: list[dict]) -> tuple[list[dict], list[dict]]:
         entry_high          = round(price * 1.001, 8)
         entry_price_assumed = round((entry_low + entry_high) / 2, 8)
 
-        target_price = round(entry_price_assumed * (1 + TARGET_PCT), 8)
-        stop_price   = round(entry_price_assumed * (1 - STOP_LOSS_PCT), 8)
+        target_price = round(entry_price_assumed * (1 + rule_engine.TARGET_PCT), 8)
+        stop_price   = round(entry_price_assumed * (1 - rule_engine.STOP_LOSS_PCT), 8)
 
         signal = {
             # Identity
@@ -136,8 +136,8 @@ def generate_signals(market_data: list[dict]) -> tuple[list[dict], list[dict]]:
             "entry_low":            entry_low,
             "entry_high":           entry_high,
             "entry_price_assumed":  entry_price_assumed,
-            "target_pct":           round(TARGET_PCT * 100, 4),
-            "stop_loss_pct":        round(STOP_LOSS_PCT * 100, 4),
+            "target_pct":           round(rule_engine.TARGET_PCT * 100, 4),
+            "stop_loss_pct":        round(rule_engine.STOP_LOSS_PCT * 100, 4),
             "target_price":         target_price,
             "stop_price":           stop_price,
             # Quality

@@ -18,6 +18,8 @@ from .signal_engine import generate_signals
 from .evaluator import evaluate_expired_signals, expire_entry_windows
 from .fcm import send_signal_push, is_initialized as fcm_ready
 from .routes.health import update_last_scan_time
+from .runtime_config import get_runtime_config
+from .rule_engine import set_algorithm_profile
 
 logger = logging.getLogger("tradeclaw.scheduler")
 scheduler = AsyncIOScheduler()
@@ -120,6 +122,15 @@ async def scan_job():
     logger.info("Scan cycle v1")
 
     try:
+        runtime_cfg = get_runtime_config()
+        if runtime_cfg["data_source_mode"] == "simulator":
+            await expire_entry_windows()
+            update_last_scan_time()
+            logger.info("Simulator mode active - skipped Binance market scan")
+            return
+
+        set_algorithm_profile(runtime_cfg["algorithm_profile"])
+
         market_data = await scan_market(BINANCE_API_KEY, BINANCE_API_SECRET)
         if not market_data:
             logger.warning("No market data")

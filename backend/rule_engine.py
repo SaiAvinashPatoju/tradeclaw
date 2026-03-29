@@ -6,6 +6,57 @@ import logging
 
 logger = logging.getLogger("tradeclaw.rule_engine")
 
+ALGORITHM_PROFILES = {"mid", "advanced"}
+
+PROFILE_PRESETS = {
+    "mid": {
+        "MOMENTUM_5M_MIN": 0.001,
+        "MOMENTUM_15M_MIN": 0.002,
+        "REL_VOLUME_MIN": 1.1,
+        "RSI_MIN": 40,
+        "RSI_MAX": 80,
+        "REL_STRENGTH_MIN": -0.005,
+        "BODY_WICK_MIN": 0.2,
+        "TREND_PERSIST_MIN": 0.33,
+        "TARGET_PCT": 0.012,
+        "STOP_LOSS_PCT": 0.006,
+        "WEIGHTS": {
+            "w1": 0.25,
+            "w2": 0.20,
+            "w3": 0.20,
+            "w4": 0.15,
+            "w5": 0.08,
+            "w6": 0.07,
+            "w7": 0.05,
+            "w8": 0.08,
+            "w9": 0.05,
+        },
+    },
+    "advanced": {
+        "MOMENTUM_5M_MIN": 0.002,
+        "MOMENTUM_15M_MIN": 0.004,
+        "REL_VOLUME_MIN": 1.35,
+        "RSI_MIN": 45,
+        "RSI_MAX": 74,
+        "REL_STRENGTH_MIN": 0.0,
+        "BODY_WICK_MIN": 0.30,
+        "TREND_PERSIST_MIN": 0.66,
+        "TARGET_PCT": 0.015,
+        "STOP_LOSS_PCT": 0.007,
+        "WEIGHTS": {
+            "w1": 0.26,
+            "w2": 0.21,
+            "w3": 0.18,
+            "w4": 0.16,
+            "w5": 0.07,
+            "w6": 0.06,
+            "w7": 0.05,
+            "w8": 0.08,
+            "w9": 0.05,
+        },
+    },
+}
+
 # -- Configurable Settings --
 LIQUIDITY_MIN = 3_000_000
 SPREAD_MAX = 0.005           # 0.5% (was 0.15%)
@@ -32,17 +83,35 @@ TARGET_PCT = 0.012          # 1.2%
 STOP_LOSS_PCT = 0.006       # 0.6%
 MIN_RR_RATIO = 1.5
 
-WEIGHTS = {
-    "w1": 0.25,
-    "w2": 0.20,
-    "w3": 0.20,
-    "w4": 0.15,
-    "w5": 0.08,
-    "w6": 0.07,
-    "w7": 0.05,
-    "w8": 0.08,
-    "w9": 0.05,
-}
+WEIGHTS = PROFILE_PRESETS["mid"]["WEIGHTS"].copy()
+
+ACTIVE_PROFILE = "mid"
+
+
+def set_algorithm_profile(profile: str) -> str:
+    global MOMENTUM_5M_MIN, MOMENTUM_15M_MIN, REL_VOLUME_MIN
+    global RSI_MIN, RSI_MAX, REL_STRENGTH_MIN, BODY_WICK_MIN, TREND_PERSIST_MIN
+    global TARGET_PCT, STOP_LOSS_PCT, WEIGHTS, ACTIVE_PROFILE
+
+    normalized = (profile or "").strip().lower()
+    if normalized not in PROFILE_PRESETS:
+        raise ValueError(f"Invalid algorithm profile: {profile}")
+
+    preset = PROFILE_PRESETS[normalized]
+    MOMENTUM_5M_MIN = preset["MOMENTUM_5M_MIN"]
+    MOMENTUM_15M_MIN = preset["MOMENTUM_15M_MIN"]
+    REL_VOLUME_MIN = preset["REL_VOLUME_MIN"]
+    RSI_MIN = preset["RSI_MIN"]
+    RSI_MAX = preset["RSI_MAX"]
+    REL_STRENGTH_MIN = preset["REL_STRENGTH_MIN"]
+    BODY_WICK_MIN = preset["BODY_WICK_MIN"]
+    TREND_PERSIST_MIN = preset["TREND_PERSIST_MIN"]
+    TARGET_PCT = preset["TARGET_PCT"]
+    STOP_LOSS_PCT = preset["STOP_LOSS_PCT"]
+    WEIGHTS = preset["WEIGHTS"].copy()
+    ACTIVE_PROFILE = normalized
+    logger.info("Algorithm profile set to %s", normalized)
+    return ACTIVE_PROFILE
 
 def apply_prefilters(f: dict) -> tuple[bool, str]:
     if f["volume_24h_usdt"] < LIQUIDITY_MIN:

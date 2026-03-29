@@ -11,8 +11,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors, fonts, spacing, borderRadius } from '../theme';
 import { getBackendUrl, setBackendUrl, getSettings, saveSettings } from '../services/storage';
+import { fetchEngineConfig, updateEngineConfig } from '../services/api';
 
 const CONFIDENCE_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'SNIPER'];
+const DATA_MODE_OPTIONS = ['simulator', 'real'];
+const ALGO_PROFILE_OPTIONS = ['mid', 'advanced'];
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -22,6 +25,8 @@ export default function SettingsScreen() {
     vibration: true,
     minConfidence: 'LOW',
     autoRemoveExpired: true,
+    dataSourceMode: 'simulator',
+    algorithmProfile: 'mid',
   });
   const [saved, setSaved] = useState(false);
 
@@ -32,8 +37,16 @@ export default function SettingsScreen() {
   const loadSettings = async () => {
     const savedUrl = await getBackendUrl();
     const savedSettings = await getSettings();
+
+    const engineResult = await fetchEngineConfig();
+    const mergedSettings = { ...savedSettings };
+    if (!engineResult.error && engineResult.data) {
+      mergedSettings.dataSourceMode = engineResult.data.data_source_mode || mergedSettings.dataSourceMode;
+      mergedSettings.algorithmProfile = engineResult.data.algorithm_profile || mergedSettings.algorithmProfile;
+    }
+
     setUrl(savedUrl);
-    setSettings(savedSettings);
+    setSettings(mergedSettings);
   };
 
   const autoDetectUrl = () => {
@@ -48,6 +61,16 @@ export default function SettingsScreen() {
       return;
     }
     await setBackendUrl(url.trim());
+
+    const enginePayload = {
+      data_source_mode: settings.dataSourceMode,
+      algorithm_profile: settings.algorithmProfile,
+    };
+    const engineUpdate = await updateEngineConfig(enginePayload);
+    if (engineUpdate.error) {
+      Alert.alert('Sync Warning', `Saved locally, but backend mode sync failed: ${engineUpdate.message}`);
+    }
+
     await saveSettings(settings);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaved(true);
@@ -122,6 +145,48 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>SIGNAL ENGINE</Text>
           <View style={styles.card}>
+            <Text style={[styles.label, { marginBottom: spacing.md }]}>Data Source</Text>
+            <View style={styles.segmentControl}>
+              {DATA_MODE_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={[
+                    styles.segmentBtn,
+                    settings.dataSourceMode === opt && styles.segmentBtnActive,
+                  ]}
+                  onPress={() => updateSetting('dataSourceMode', opt)}
+                >
+                  <Text style={[
+                    styles.segmentText,
+                    settings.dataSourceMode === opt && styles.segmentTextActive,
+                  ]}>
+                    {opt.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={[styles.label, { marginBottom: spacing.md, marginTop: spacing.lg }]}>Algorithm Profile</Text>
+            <View style={styles.segmentControl}>
+              {ALGO_PROFILE_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={[
+                    styles.segmentBtn,
+                    settings.algorithmProfile === opt && styles.segmentBtnActive,
+                  ]}
+                  onPress={() => updateSetting('algorithmProfile', opt)}
+                >
+                  <Text style={[
+                    styles.segmentText,
+                    settings.algorithmProfile === opt && styles.segmentTextActive,
+                  ]}>
+                    {opt.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <Text style={[styles.label, { marginBottom: spacing.md }]}>Minimum Confidence Tier</Text>
             
             <View style={styles.segmentControl}>
