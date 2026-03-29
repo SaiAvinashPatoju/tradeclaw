@@ -2,8 +2,14 @@
 set -euo pipefail
 
 MASTER_IP="${1:-}"
+WORKER_ID="${2:-}"
+
 if [ -z "$MASTER_IP" ]; then
-  read -r -p "Enter master laptop IP: " MASTER_IP
+  read -r -p "Enter master laptop IP (example 192.168.1.10): " MASTER_IP
+fi
+
+if [ -z "$WORKER_ID" ]; then
+  read -r -p "Enter worker id (1 or 2): " WORKER_ID
 fi
 
 if [ -z "$MASTER_IP" ]; then
@@ -11,11 +17,18 @@ if [ -z "$MASTER_IP" ]; then
   exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/worker_install_and_prepare.sh"
+if [ "$WORKER_ID" != "1" ] && [ "$WORKER_ID" != "2" ]; then
+  echo "Worker ID must be 1 or 2."
+  exit 1
+fi
 
-WORKER_NAME="tradeclaw-remote-worker-2"
-HOST_UI_PORT="8092"
+if [ "$WORKER_ID" = "1" ]; then
+  WORKER_NAME="tradeclaw-remote-worker-1"
+  HOST_UI_PORT="8091"
+else
+  WORKER_NAME="tradeclaw-remote-worker-2"
+  HOST_UI_PORT="8092"
+fi
 
 docker rm -f "$WORKER_NAME" >/dev/null 2>&1 || true
 docker run -d \

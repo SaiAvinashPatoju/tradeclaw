@@ -14,10 +14,17 @@ This adds a mini-project implementation for:
 - `backend/data_simulator.py`
 - `backend/spark_analyzer.py`
 - `scripts/run_spark_pipeline.ps1`
-- `scripts/planA_master_start.ps1`
-- `scripts/worker_install_and_prepare.ps1`
-- `scripts/start_slave_teammate1.ps1`
-- `scripts/start_slave_teammate2.ps1`
+- `team/windows/master_planA.bat`
+- `team/windows/teamsetup.bat`
+- `team/windows/run_slave.bat`
+- `team/windows/stop_slave.bat`
+- `team/mac/master_planA.sh`
+- `team/mac/teamsetup.sh`
+- `team/mac/run_slave.sh`
+- `team/mac/stop_slave.sh`
+- `team/windows/instructions.md`
+- `team/mac/instructions.md`
+- `team/instructions.md`
 - `PLAN_A_DISTRIBUTED_DEMO.md`
 - `PROJECT_REPORT.md`
 
@@ -30,30 +37,18 @@ Use the dedicated runbook:
 Quick start:
 
 1. Master laptop:
-   - `powershell -ExecutionPolicy Bypass -File scripts/planA_master_start.ps1 -MasterIp <MASTER_LAN_IP>`
+   - Windows: `team\\windows\\master_planA.bat <MASTER_LAN_IP>`
+   - macOS: `./team/mac/master_planA.sh <MASTER_LAN_IP>`
 2. Teammate 1:
-   - `powershell -ExecutionPolicy Bypass -File scripts/start_slave_teammate1.ps1 -MasterIp <MASTER_LAN_IP>`
+   - Windows: `team\\windows\\teamsetup.bat` then `team\\windows\\run_slave.bat <MASTER_LAN_IP> 1`
+   - macOS: `./team/mac/teamsetup.sh` then `./team/mac/run_slave.sh <MASTER_LAN_IP> 1`
 3. Teammate 2:
-   - `powershell -ExecutionPolicy Bypass -File scripts/start_slave_teammate2.ps1 -MasterIp <MASTER_LAN_IP>`
-
-Windows clickable launchers are also available:
-
-- `scripts\\planA_master_start.bat`
-- `scripts\\worker_install_and_prepare.bat`
-- `scripts\\start_slave_teammate1.bat`
-- `scripts\\start_slave_teammate2.bat`
-- `scripts\\stop_remote_slaves.bat`
-
-macOS shell equivalents are also available:
-
-- `scripts/worker_install_and_prepare.sh`
-- `scripts/start_slave_teammate1.sh`
-- `scripts/start_slave_teammate2.sh`
-- `scripts/stop_remote_slaves.sh`
+   - Windows: `team\\windows\\teamsetup.bat` then `team\\windows\\run_slave.bat <MASTER_LAN_IP> 2`
+   - macOS: `./team/mac/teamsetup.sh` then `./team/mac/run_slave.sh <MASTER_LAN_IP> 2`
 
 If Wi-Fi blocks remote workers, use fallback:
 
-- `powershell -ExecutionPolicy Bypass -File scripts/planA_master_start.ps1 -MasterIp <MASTER_LAN_IP> -UseLocalWorkersFallback`
+- Run single-machine local flow: `run_tradeclaw_distributed.bat`
 
 ## Prerequisites
 1. Docker Desktop running.

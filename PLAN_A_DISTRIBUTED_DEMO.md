@@ -19,13 +19,14 @@ This runbook is for the professor demo where one laptop is Spark master and two 
 
 1. On each teammate laptop, clone repository.
 2. On each teammate laptop, run:
-   powershell -ExecutionPolicy Bypass -File scripts/worker_install_and_prepare.ps1
+   - Windows: `team\\windows\\teamsetup.bat`
+   - macOS: `./team/mac/teamsetup.sh`
 3. On master laptop, ensure Docker Desktop is running and venv exists.
 
 ### Clickable scripts by OS
 
-- Windows (double-click friendly): use `.bat` files in `scripts/`.
-- macOS (Terminal): run `.sh` scripts in `scripts/` after `chmod +x scripts/*.sh`.
+- Windows (double-click friendly): use `.bat` files in `team/windows`.
+- macOS (Terminal): run `.sh` scripts in `team/mac` after `chmod +x team/mac/*.sh`.
 
 ## 4. Demo Day Start Sequence
 
@@ -33,11 +34,11 @@ This runbook is for the professor demo where one laptop is Spark master and two 
 
 On master laptop:
 
-powershell -ExecutionPolicy Bypass -File scripts/planA_master_start.ps1 -MasterIp <MASTER_LAN_IP>
+team\\windows\\master_planA.bat <MASTER_LAN_IP>
 
-Windows clickable alternative:
+macOS alternative:
 
-scripts\\planA_master_start.bat <MASTER_LAN_IP>
+./team/mac/master_planA.sh <MASTER_LAN_IP>
 
 What this script does:
 - Starts postgres, zookeeper, kafka, spark-master.
@@ -51,29 +52,21 @@ What this script does:
 
 On teammate 1 laptop:
 
-powershell -ExecutionPolicy Bypass -File scripts/start_slave_teammate1.ps1 -MasterIp <MASTER_LAN_IP>
-
-Windows clickable alternative:
-
-scripts\\start_slave_teammate1.bat <MASTER_LAN_IP>
+team\\windows\\run_slave.bat <MASTER_LAN_IP> 1
 
 macOS alternative:
 
-./scripts/start_slave_teammate1.sh <MASTER_LAN_IP>
+./team/mac/run_slave.sh <MASTER_LAN_IP> 1
 
 ### Step C: Teammate 2 starts worker
 
 On teammate 2 laptop:
 
-powershell -ExecutionPolicy Bypass -File scripts/start_slave_teammate2.ps1 -MasterIp <MASTER_LAN_IP>
-
-Windows clickable alternative:
-
-scripts\\start_slave_teammate2.bat <MASTER_LAN_IP>
+team\\windows\\run_slave.bat <MASTER_LAN_IP> 2
 
 macOS alternative:
 
-./scripts/start_slave_teammate2.sh <MASTER_LAN_IP>
+./team/mac/run_slave.sh <MASTER_LAN_IP> 2
 
 ### Step D: Validate cluster
 
@@ -108,7 +101,7 @@ Expected:
 
 On master laptop only:
 
-powershell -ExecutionPolicy Bypass -File scripts/planA_master_start.ps1 -MasterIp <MASTER_LAN_IP> -UseLocalWorkersFallback
+run_tradeclaw_distributed.bat
 
 This keeps demo alive with local workers.
 
@@ -120,12 +113,10 @@ docker-compose down
 
 Teammates:
 
-powershell -ExecutionPolicy Bypass -File scripts/stop_remote_slaves.ps1
-
-Windows clickable alternative:
-
-scripts\\stop_remote_slaves.bat
+team\\windows\\stop_slave.bat 1
+team\\windows\\stop_slave.bat 2
 
 macOS alternative:
 
-./scripts/stop_remote_slaves.sh
+./team/mac/stop_slave.sh 1
+./team/mac/stop_slave.sh 2
