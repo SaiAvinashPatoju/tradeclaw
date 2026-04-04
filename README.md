@@ -189,8 +189,9 @@ tradeclaw/
 ```bash
 git clone https://github.com/SaiAvinashPatoju/tradeclaw.git
 cd tradeclaw
-cp .env.example .env   # ⚠️ Create from template — never commit real secrets
 ```
+
+Create a `.env` file in the project root with the variables listed in the [Environment Variables](#environment-variables) table below. **Never commit real secrets to version control.**
 
 #### 2. Start infrastructure
 
@@ -462,7 +463,7 @@ pytest backend/tests/ -v
 | **Scan cycle summary** | Each 60s cycle logs: symbols scanned, signals emitted, rejections, elapsed time |
 | **Spark logs** | Per-batch partition/host distribution stats logged to stdout |
 
-> ❗ Needs verification: No external metrics sink (Prometheus, Datadog, etc.) is configured. Application-level metrics must be scraped from the health endpoint or log aggregator.
+> No external metrics sink (Prometheus, Datadog, etc.) is configured in this codebase. Application-level health data must be scraped from the `/health` endpoint or a log aggregator pointed at the structured log output.
 
 ---
 
@@ -477,7 +478,7 @@ pytest backend/tests/ -v
 | **Database credentials** | ⚠️ Hardcoded defaults (`tradeclaw:tradeclaw`) in `docker-compose.yml`. Use strong credentials in production. |
 | **Input validation** | ✅ Pydantic models validate all API request bodies. |
 | **SQL injection** | ✅ SQLAlchemy ORM with parameterised queries throughout. |
-| **TLS / HTTPS** | ❗ Needs verification — no TLS termination in current setup. |
+| **TLS / HTTPS** | ❌ Not configured — Uvicorn is exposed directly. Use a TLS-terminating reverse proxy (nginx, Caddy) in production. |
 | **Binance API scope** | ✅ Only market data endpoints used — read-only keys are sufficient. |
 
 ---
