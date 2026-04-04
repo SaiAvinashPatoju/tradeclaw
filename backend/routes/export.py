@@ -5,7 +5,7 @@ GET /export/signals, /export/market, /export/trades with JSON and CSV format sup
 import csv
 import io
 import time
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,9 @@ from ..database import get_db
 from ..models import Signal, MarketSnapshot, TradeOutcome
 
 router = APIRouter(prefix="/export", tags=["export"])
+
+_EXPORT_ROW_LIMIT = 10_000  # hard cap to prevent runaway queries
+_VALID_FORMATS = frozenset({"json", "csv"})
 
 
 def _rows_to_csv(rows: list[dict]) -> str:
@@ -40,6 +43,8 @@ async def export_signals(
     db: AsyncSession = Depends(get_db),
 ):
     """Export signal history."""
+    if format not in _VALID_FORMATS:
+        raise HTTPException(status_code=400, detail="format must be 'json' or 'csv'")
     if to_ts == 0:
         to_ts = int(time.time())
 
@@ -48,6 +53,7 @@ async def export_signals(
         .where(Signal.generated_at >= from_ts)
         .where(Signal.generated_at <= to_ts)
         .order_by(Signal.generated_at.desc())
+        .limit(_EXPORT_ROW_LIMIT)
     )
     result = await db.execute(stmt)
     signals = result.scalars().all()
@@ -72,6 +78,8 @@ async def export_market(
     db: AsyncSession = Depends(get_db),
 ):
     """Export market snapshot data."""
+    if format not in _VALID_FORMATS:
+        raise HTTPException(status_code=400, detail="format must be 'json' or 'csv'")
     if to_ts == 0:
         to_ts = int(time.time())
 
@@ -82,7 +90,7 @@ async def export_market(
     )
     if symbol:
         stmt = stmt.where(MarketSnapshot.symbol == symbol.upper())
-    stmt = stmt.order_by(MarketSnapshot.captured_at.desc())
+    stmt = stmt.order_by(MarketSnapshot.captured_at.desc()).limit(_EXPORT_ROW_LIMIT)
 
     result = await db.execute(stmt)
     snapshots = result.scalars().all()
@@ -106,6 +114,8 @@ async def export_trades(
     db: AsyncSession = Depends(get_db),
 ):
     """Export trade records."""
+    if format not in _VALID_FORMATS:
+        raise HTTPException(status_code=400, detail="format must be 'json' or 'csv'")
     if to_ts == 0:
         to_ts = int(time.time())
 
@@ -114,6 +124,7 @@ async def export_trades(
         .where(TradeOutcome.entry_time >= from_ts)
         .where(TradeOutcome.entry_time <= to_ts)
         .order_by(TradeOutcome.entry_time.desc())
+        .limit(_EXPORT_ROW_LIMIT)
     )
     result = await db.execute(stmt)
     trades = result.scalars().all()

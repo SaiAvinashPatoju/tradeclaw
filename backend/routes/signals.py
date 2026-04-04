@@ -13,8 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
 from ..models import Signal
+from ..security import require_api_key
 
 router = APIRouter(prefix="/signals", tags=["signals"])
+
+# Allowed values for the status path parameter
+_VALID_STATUSES = frozenset({"ACTIVE", "EXPIRED", "EVALUATING", "WIN", "LOSS", "INCOMPLETE"})
 
 
 # ── Pydantic response shapes ──────────────────────────────────────────
@@ -106,10 +110,16 @@ async def get_signals_by_status(
     limit:  int = Query(50, ge=1, le=200),
     db:     AsyncSession = Depends(get_db),
 ):
-    """Filter signals by any lifecycle status."""
+    """Filter signals by lifecycle status."""
+    normalized = status.upper()
+    if normalized not in _VALID_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status '{status}'. Must be one of: {sorted(_VALID_STATUSES)}",
+        )
     stmt = (
         select(Signal)
-        .where(Signal.status == status.upper())
+        .where(Signal.status == normalized)
         .order_by(Signal.generated_at.desc())
         .limit(limit)
     )
@@ -121,7 +131,7 @@ async def get_signals_by_status(
 
 # ── Manual insert (dev/testing) ───────────────────────────────────────
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_api_key)])
 async def create_signal_manual(signal_data: dict, db: AsyncSession = Depends(get_db)):
     """Manually insert a signal (for dev testing only)."""
     signal_id = signal_data.get("id")

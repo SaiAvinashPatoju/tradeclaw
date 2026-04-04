@@ -2,7 +2,7 @@
 TradeClaw - Runtime Control Routes
 Allows switching data source mode and algorithm profile at runtime.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..runtime_config import (
@@ -12,6 +12,7 @@ from ..runtime_config import (
     set_runtime_algorithm_profile,
 )
 from ..rule_engine import ALGORITHM_PROFILES
+from ..security import require_api_key
 
 router = APIRouter(prefix="/control", tags=["control"])
 
@@ -39,7 +40,7 @@ async def get_engine_config():
     )
 
 
-@router.put("/engine", response_model=EngineConfigOut)
+@router.put("/engine", response_model=EngineConfigOut, dependencies=[Depends(require_api_key)])
 async def update_engine_config(payload: EngineConfigUpdate):
     try:
         if payload.data_source_mode is not None:

@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .config import ALLOWED_ORIGINS, TRADECLAW_API_KEY
 from .database import init_db
 from .fcm import init_fcm
 from .scheduler import start_scheduler, stop_scheduler
@@ -31,6 +32,11 @@ async def lifespan(app: FastAPI):
     """Manage startup and shutdown events."""
     # Startup
     logger.info("🦀 TradeClaw starting up...")
+    if not TRADECLAW_API_KEY:
+        logger.warning(
+            "TRADECLAW_API_KEY is not set — write/admin endpoints are unauthenticated. "
+            "Set this env var in production."
+        )
     await init_db()
     logger.info("Database initialized")
 
@@ -58,7 +64,7 @@ app = FastAPI(
 # ── CORS ─────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
