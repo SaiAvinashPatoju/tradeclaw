@@ -1,0 +1,44 @@
+# ── Secrets & credentials ──────────────────────────────────────────────
+.env
+firebase-service-account.json
+google-services.json
+
+# ── Python ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+.Python
+
+# ── Test & coverage ─────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+*.test_results
+
+# ── IDE & editor ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Node / mobile ────────────────────────────────────────────────────────
+node_modules/
+.expo/
+*.keystore
+*.jks
+
+# ── OS ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Logs ────────────────────────────────────────────────────────────────
+*.log
+logs/

@@ -2,19 +2,17 @@
 TradeClaw — Firebase Cloud Messaging Module
 Sends push notifications for signal alerts.
 """
-import json
 import logging
 from pathlib import Path
 
 import firebase_admin
 from firebase_admin import credentials, messaging
 
+from .config import FIREBASE_SERVICE_ACCOUNT_PATH
+
 logger = logging.getLogger("tradeclaw.fcm")
 
 _app = None
-
-# Firebase service account key path
-_SERVICE_ACCOUNT_PATH = Path(__file__).resolve().parent.parent / "firebase-service-account.json"
 
 # Confidence tier → emoji mapping
 CONFIDENCE_EMOJI = {
@@ -31,12 +29,13 @@ def init_fcm():
         if _app is not None:
             return
 
-        if not _SERVICE_ACCOUNT_PATH.exists():
-            logger.warning(f"Firebase service account not found at {_SERVICE_ACCOUNT_PATH}. "
+        sa_path = Path(FIREBASE_SERVICE_ACCOUNT_PATH)
+        if not sa_path.exists():
+            logger.warning(f"Firebase service account not found at {sa_path}. "
                            f"FCM notifications will be disabled.")
             return
 
-        cred = credentials.Certificate(str(_SERVICE_ACCOUNT_PATH))
+        cred = credentials.Certificate(str(sa_path))
         _app = firebase_admin.initialize_app(cred)
         logger.info("Firebase Admin SDK initialized successfully")
     except Exception as e:
